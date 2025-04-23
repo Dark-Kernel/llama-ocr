@@ -1,5 +1,6 @@
 import Together from "together-ai";
 import fs from "fs";
+import { Command } from "commander";
 
 export async function ocr({
   filePath,
@@ -75,4 +76,25 @@ function encodeImage(imagePath: string) {
 
 function isRemoteFile(filePath: string): boolean {
   return filePath.startsWith("http://") || filePath.startsWith("https://");
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    const program = new Command();
+    program
+      .requiredOption("-f, --file <file>", "File to OCR")
+      .option("-k, --key <key>", "API Key")
+      .option("-m, --model <model>", "Model to use")
+      .action(async (options) => {
+          try {
+              const markdown = await ocr({
+                  filePath: options.file,
+                  apiKey: options.key,
+                  model: options.model,
+              });
+              console.log(markdown);
+          } catch (error) {
+              console.error("Error processing OCR: ", error);
+          }
+      });
+    program.parse(process.argv);
 }
